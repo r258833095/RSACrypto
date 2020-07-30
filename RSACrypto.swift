@@ -22,13 +22,13 @@ class RSACrypto: NSObject {
     class func encryptData(content: NSData?, pubKey: NSString?) -> NSData? {
         
         if (content == nil || pubKey == nil){
-            return nil;
+            return nil
         }
         
         //Public Key
         let keyRef : SecKey? = addPublicKey(key: pubKey!)
         if (keyRef == nil) {
-            return nil;
+            return nil
         }
         
         return encryptData(data: content!, keyRef: keyRef!)
@@ -72,8 +72,8 @@ class RSACrypto: NSObject {
         // Now fetch the SecKeyRef version of the key
         var keyRef : AnyObject?
         status = SecItemCopyMatching(publicKey, &keyRef)
-        if(status != noErr){
-            return nil;
+        if (status != noErr || keyRef == nil){
+            return nil
         }
         return (keyRef as! SecKey)
     }
@@ -115,7 +115,7 @@ class RSACrypto: NSObject {
             return nil
         }
         
-        let string : NSMutableString = NSMutableString(capacity: data!.length);
+        let string : NSMutableString = NSMutableString(capacity: data!.length)
         data?.enumerateBytes({(bytes, byteRange, stop) in
             let dataBytes : UnsafeRawPointer = bytes
             for idx in 0...byteRange.length - 1 {
@@ -132,7 +132,5 @@ class RSACrypto: NSObject {
         return string as String
     }
     
-    
-    
-    
+
 }
