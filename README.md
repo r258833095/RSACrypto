@@ -1,12 +1,12 @@
 功能：<br> 
-Swift版，RSA字符串公钥加密，输出16进制字符串结果。<br> 
+Swift版，RSA字符串公钥加密，输出16进制或Base64字符串结果。<br> 
 使用SecKey，无需引入openSSL，支持iOS9以上。<br> 
 
 
 使用方法：<br> 
 ```swift 
-let key : NSString = "MIGfMA0....略....IwIDAQAB"
-let str : NSString? = RSACrypto.encryptString(content: "123456", pubKey: key) as NSString?
+let key : NSString = "MIGfMA0........IwIDAQAB"
+let str : NSString? = RSACrypto.encryptString(content: "123456", pubKey: key, type: .hex) as NSString?
 NSLog("%@", str ?? "err")
 ``` 
 
