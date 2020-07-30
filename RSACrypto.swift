@@ -9,12 +9,24 @@
 import Foundation
 
 class RSACrypto: NSObject {
-    class func encryptString(content: String, pubKey: NSString) -> String? {
+    
+    enum RSAOutputType {
+        case hex
+        case base64
+    }
+    
+    class func encryptString(content: String, pubKey: NSString, type: RSAOutputType) -> String? {
         let contentData: NSData = (content.data(using: String.Encoding.utf8)! as NSData)
         let data : NSData? = encryptData(content: contentData, pubKey: pubKey)
         if data != nil {
-            let ret = dataToHexStr(data: data!)
-            return ret
+            switch type {
+            case .hex:
+                let ret = dataToHexStr(data: data!)
+                return ret
+            case .base64:
+                let ret = data!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: NSData.Base64EncodingOptions.lineLength64Characters.rawValue))
+                return ret
+            }
         }
         return nil
     }
