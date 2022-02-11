@@ -5,7 +5,6 @@
 //  Created by 斌 on 2020/7/29.
 //  Copyright © 2020 斌. All rights reserved.
 //
-
 import Foundation
 
 class RSACrypto: NSObject {
@@ -97,25 +96,46 @@ class RSACrypto: NSObject {
             return nil
         }
         
-        var resData : NSData? = nil
-        if #available(iOS 10.0, *) {
-            var error: Unmanaged<CFError>?
-            resData =  SecKeyCreateEncryptedData(keyRef!, SecKeyAlgorithm.rsaEncryptionPKCS1, data! as CFData, &error)
-            print("res = \(String(describing: error?.takeUnretainedValue().localizedDescription))")
-        } else{
+        var offset = 0
+        let contentLen = data!.length
+        let resData = NSMutableData()
+        while (contentLen - offset > 0) {
             
-            // Fallback on earlier versions
-            let blockLen =  SecKeyGetBlockSize(keyRef!)
-            var outBuf = [UInt8](repeating: 0, count: blockLen)
-            var outBufLen:Int = blockLen
-            
-            let status: OSStatus = SecKeyEncrypt(keyRef!, SecPadding.PKCS1, data!.bytes.assumingMemoryBound(to: UInt8.self), data!.count, &outBuf, &outBufLen)
-            if status == noErr {
-                resData = NSData(bytes: outBuf, length: outBufLen)
+            var len = SecKeyGetBlockSize(keyRef!) - 11
+            if (contentLen - offset < len) {
+                len = contentLen - offset
             }
+            
+            let subData : NSData = data!.subdata(with: NSMakeRange(offset, len)) as NSData
+            
+            var encData : NSData? = nil
+            if #available(iOS 10.0, *) {
+                var error: Unmanaged<CFError>?
+                encData =  SecKeyCreateEncryptedData(keyRef!, SecKeyAlgorithm.rsaEncryptionPKCS1, subData as CFData, &error)
+                print("res = \(String(describing: error?.takeUnretainedValue().localizedDescription))")
+            } else{
+                
+                // Fallback on earlier versions
+                let blockLen =  SecKeyGetBlockSize(keyRef!)
+                var outBuf = [UInt8](repeating: 0, count: blockLen)
+                var outBufLen:Int = blockLen
+                
+                let status: OSStatus = SecKeyEncrypt(keyRef!, SecPadding.PKCS1, subData.bytes.assumingMemoryBound(to: UInt8.self), subData.count, &outBuf, &outBufLen)
+                if status == noErr {
+                    encData = NSData(bytes: outBuf, length: outBufLen)
+                }
+            }
+            
+            
+            if encData != nil {
+                resData.append(encData! as Data)
+            }
+            
+            offset = offset + len
         }
         
-        if resData != nil {
+       
+        if resData.length > 0 {
             return resData
         }
         return nil
